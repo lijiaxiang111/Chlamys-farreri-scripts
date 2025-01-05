@@ -1,0 +1,29 @@
+#pbs.sh
+#!/bin/sh
+#PBS -N DRAM-v-0.2
+#PBS -l nodes=1:ppn=36
+#PBS -q com
+#PBS -V
+#PBS -j oe
+#PBS -S /bin/bash
+#PBS -l walltime=999:00:00
+
+cd /2_Virus/DRAM-v/
+
+#source activate vs2
+
+# Check if the output directory exists, if not create it
+output_dir="//2_Virus/DRAM-v/"
+if [ ! -d "$output_dir" ]; then
+  mkdir -p "$output_dir"
+fi
+
+#virsorter run --prep-for-dramv --keep-original-seq --viral-gene-enrich-off --seqname-suffix-off --provirus-off -i "//2_Virus/DRAM-v/1.5HQ_5K.fasta" -w //2_Virus/DRAM-v/vs2 -j 36 --include-groups "dsDNAphage,NCLDV,ssDNA,lavidaviridae" --min-score 0.5 all &&
+
+source activate DRAM
+
+python "/lustre/home/wangmin/yuhao/DRAM-v.py" annotate -i "//2_Virus/DRAM-v/vs2/for-dramv/final-viral-combined-for-dramv.fa" -v "//2_Virus/DRAM-v/vs2/for-dramv/viral-affi-contigs-for-dramv.tab" -o //2_Virus/DRAM-v/DRAM_v --min_contig_size 1500 --threads 36 --skip_trnascan &&
+
+python //DRAM-v.py distill -i //2_Virus/DRAM-v/DRAM_v/annotations.tsv -o //2_Virus/DRAM-v/dram_distilled/
+
+date

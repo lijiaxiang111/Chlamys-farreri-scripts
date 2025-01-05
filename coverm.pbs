@@ -1,0 +1,38 @@
+#pbs.sh
+#!/bin/sh
+#PBS -l nodes=1:ppn=36
+#PBS -q com
+#PBS -V
+#PBS -N coverm_LJX
+#PBS -j oe
+#PBS -S /bin/bash
+#PBS -l walltime=999:00:00
+
+cd /2_Virus/coverm/vibrio_phage/
+
+date
+source activate coverm
+
+# Define the base paths for inputs and outputs
+READS_PATH="./nohost_reads"
+REFERENCE_PATH="/2_Virus/vibrio_phage.fasta"
+OUTPUT_BASE=//2_Virus/coverm/vibrio_phage/
+# Ensure the BAM cache directory exists
+mkdir -p $BAM_CACHE_DIR
+
+# Array of sample identifiers
+samples=("SGW1L1" "SGW1L2" "SGW1L3" "SGW1L4" "SGW2D1" "SGW2D2" "SGW2D3" "SGW2D4" "SGW2L1" "SGW2L2" "SGW2L3" "SGW2L4" "SGW2L5")
+
+# Loop over each sample and run CoverM
+for sample in "${samples[@]}"; do
+    TMPDIR=.
+    coverm contig \
+        --coupled ${READS_PATH}/${sample}_1.fastq ${READS_PATH}/${sample}_2.fastq \
+        --reference ${REFERENCE_PATH} \
+        --min-read-percent-identity 0.95 \
+        --min-read-aligned-percent 0.75 \
+        --methods rpkm \
+        -o ${OUTPUT_BASE}/${sample}.txt
+done
+
+date
